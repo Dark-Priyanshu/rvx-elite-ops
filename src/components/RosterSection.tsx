@@ -1,33 +1,32 @@
-import { Crosshair, Target, Shield, Crown } from "lucide-react";
+import jaat18Image from "@/assets/team/jaat18.jpg";
+import mayank16Image from "@/assets/team/mayank16.png";
+import delete17Image from "@/assets/team/delete17.jpg";
+import ansh19Image from "@/assets/team/ansh19.jpg";
 
 const players = [
   {
-    name: "RVX_Phoenix",
-    role: "IGL / Captain",
-    playstyle: "Strategic Command",
-    icon: Crown,
-    stats: { kills: "2.5K", kd: "4.2", winRate: "78%" },
+    name: "RVX.JAAT18",
+    role: "Secondary Rusher + IGL",
+    playstyle: "Strategic Assault",
+    image: jaat18Image,
   },
   {
-    name: "RVX_Shadow",
-    role: "Rusher",
-    playstyle: "Close Combat",
-    icon: Crosshair,
-    stats: { kills: "3.1K", kd: "3.8", winRate: "72%" },
-  },
-  {
-    name: "RVX_Viper",
+    name: "RVX.MAYANK16",
     role: "Sniper",
-    playstyle: "Long Range",
-    icon: Target,
-    stats: { kills: "2.8K", kd: "5.1", winRate: "81%" },
+    playstyle: "Long Range Precision",
+    image: mayank16Image,
   },
   {
-    name: "RVX_Titan",
-    role: "Support",
-    playstyle: "Team Anchor",
-    icon: Shield,
-    stats: { kills: "1.9K", kd: "2.9", winRate: "75%" },
+    name: "RVX.DELETE17",
+    role: "Primary Rusher",
+    playstyle: "Aggressive Entry",
+    image: delete17Image,
+  },
+  {
+    name: "RVX.ANSH19",
+    role: "Nader + Assaulter",
+    playstyle: "Explosive Tactics",
+    image: ansh19Image,
   },
 ];
 
@@ -60,14 +59,18 @@ const RosterSection = () => {
               className="group relative bg-card/50 backdrop-blur border border-border rounded-lg overflow-hidden hover:border-primary/50 transition-all duration-500 hud-corner"
               style={{ animationDelay: `${index * 100}ms` }}
             >
-              {/* Player Image Placeholder */}
-              <div className="relative h-48 bg-gradient-to-b from-muted to-card overflow-hidden">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <player.icon className="w-20 h-20 text-primary/20 group-hover:text-primary/40 transition-colors" />
-                </div>
+              {/* Player Image */}
+              <div className="relative h-56 overflow-hidden">
+                <img
+                  src={player.image}
+                  alt={player.name}
+                  className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                />
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
                 
                 {/* Scan Effect on Hover */}
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-700" />
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/10 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-700" />
                 
                 {/* Status Indicator */}
                 <div className="absolute top-4 right-4 flex items-center gap-2 px-2 py-1 bg-background/80 rounded text-xs">
@@ -87,22 +90,6 @@ const RosterSection = () => {
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-2">{player.playstyle}</p>
-
-                {/* Stats */}
-                <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-border">
-                  <div className="text-center">
-                    <div className="font-orbitron text-sm font-bold text-primary">{player.stats.kills}</div>
-                    <div className="text-[10px] text-muted-foreground uppercase">Kills</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="font-orbitron text-sm font-bold text-primary">{player.stats.kd}</div>
-                    <div className="text-[10px] text-muted-foreground uppercase">K/D</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="font-orbitron text-sm font-bold text-primary">{player.stats.winRate}</div>
-                    <div className="text-[10px] text-muted-foreground uppercase">Win%</div>
-                  </div>
-                </div>
               </div>
 
               {/* Hover Glow Effect */}

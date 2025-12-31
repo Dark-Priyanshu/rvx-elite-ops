@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import rvxLogo from "@/assets/rvx-logo.webp";
+import rvxLogo from "@/assets/rvx-logo.jpg";
 
 const navLinks = [
   { name: "Home", href: "#home" },

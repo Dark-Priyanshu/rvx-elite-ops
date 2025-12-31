@@ -53,22 +53,26 @@ const Footer = () => {
               </h4>
               <div className="space-y-3">
                 <a
-                  href="#"
+                  href="https://instagram.com/rvx_esports__"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors group"
                 >
                   <div className="p-2 bg-muted rounded group-hover:bg-primary/10 transition-colors">
                     <Instagram className="w-4 h-4" />
                   </div>
-                  <span className="text-sm">RVX ESPORTS Instagram</span>
+                  <span className="text-sm">@rvx_esports__</span>
                 </a>
                 <a
-                  href="#"
+                  href="https://youtube.com/@Rvx_esports"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors group"
                 >
                   <div className="p-2 bg-muted rounded group-hover:bg-primary/10 transition-colors">
                     <Youtube className="w-4 h-4" />
                   </div>
-                  <span className="text-sm">RVX ESPORTS YouTube</span>
+                  <span className="text-sm">Rvx_esports</span>
                 </a>
                 <a
                   href="#"

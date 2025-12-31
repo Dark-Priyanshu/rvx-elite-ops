@@ -1,4 +1,4 @@
-import { Twitter, Instagram, Youtube } from "lucide-react";
+import { Instagram } from "lucide-react";
 import farzanImage from "@/assets/team/farzan.png";
 import hyperImage from "@/assets/team/hyper.png";
 
@@ -9,6 +9,7 @@ const commanders = [
     rank: "Commander-in-Chief",
     description: "Founder & Visionary Leader of RVX ESPORTS",
     image: farzanImage,
+    instagram: "fzmoharkan",
   },
   {
     name: "RVX HYPER",
@@ -16,6 +17,7 @@ const commanders = [
     rank: "Operations Lead",
     description: "Strategic Operations & Team Coordination",
     image: hyperImage,
+    instagram: "dark_priyanshu_",
   },
 ];
 
@@ -72,16 +74,17 @@ const CommandSection = () => {
                 <p className="text-primary text-sm font-medium">{commander.title}</p>
                 <p className="text-muted-foreground text-sm mt-2">{commander.description}</p>
 
-                {/* Social Links */}
-                <div className="flex justify-center gap-3 mt-4 pt-4 border-t border-border">
-                  {[Twitter, Instagram, Youtube].map((Icon, i) => (
-                    <button
-                      key={i}
-                      className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded transition-colors"
-                    >
-                      <Icon className="w-4 h-4" />
-                    </button>
-                  ))}
+                {/* Instagram Link */}
+                <div className="flex justify-center mt-4 pt-4 border-t border-border">
+                  <a
+                    href={`https://instagram.com/${commander.instagram}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded transition-colors"
+                  >
+                    <Instagram className="w-4 h-4" />
+                    <span className="text-sm">@{commander.instagram}</span>
+                  </a>
                 </div>
               </div>
             </div>

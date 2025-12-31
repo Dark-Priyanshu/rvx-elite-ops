@@ -1,3 +1,4 @@
+import { Instagram } from "lucide-react";
 import jaat18Image from "@/assets/team/jaat18.jpg";
 import mayank16Image from "@/assets/team/mayank16.png";
 import delete17Image from "@/assets/team/delete17.jpg";
@@ -9,24 +10,28 @@ const players = [
     role: "Secondary Rusher + IGL",
     playstyle: "Strategic Assault",
     image: jaat18Image,
+    instagram: "amitjaat168",
   },
   {
     name: "RVX.MAYANK16",
     role: "Sniper",
     playstyle: "Long Range Precision",
     image: mayank16Image,
+    instagram: "rvx.mayank16",
   },
   {
     name: "RVX.DELETE17",
     role: "Primary Rusher",
     playstyle: "Aggressive Entry",
     image: delete17Image,
+    instagram: "arshbal06",
   },
   {
     name: "RVX.ANSH19",
     role: "Nader + Assaulter",
     playstyle: "Explosive Tactics",
     image: ansh19Image,
+    instagram: "rvx._ansh19",
   },
 ];
 
@@ -90,6 +95,17 @@ const RosterSection = () => {
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-2">{player.playstyle}</p>
+                
+                {/* Instagram Link */}
+                <a
+                  href={`https://instagram.com/${player.instagram}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 mt-3 text-muted-foreground hover:text-primary transition-colors text-sm"
+                >
+                  <Instagram className="w-4 h-4" />
+                  <span>@{player.instagram}</span>
+                </a>
               </div>
 
               {/* Hover Glow Effect */}

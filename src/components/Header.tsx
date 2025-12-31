@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Menu, X, Shield } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import rvxLogo from "@/assets/rvx-logo.webp";
 
 const navLinks = [
   { name: "Home", href: "#home" },
@@ -22,7 +23,7 @@ const Header = () => {
           {/* Logo */}
           <a href="#home" className="flex items-center gap-3 group">
             <div className="relative">
-              <Shield className="w-10 h-10 text-primary animate-pulse-glow" />
+              <img src={rvxLogo} alt="RVX ESPORTS Logo" className="w-12 h-12 md:w-14 md:h-14 object-contain" />
               <div className="absolute inset-0 bg-primary/20 blur-xl" />
             </div>
             <div className="flex flex-col">

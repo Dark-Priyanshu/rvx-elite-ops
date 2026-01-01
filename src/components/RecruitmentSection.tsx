@@ -5,6 +5,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { z } from "zod";
+
+// Validation schema
+const recruitmentSchema = z.object({
+  playerName: z.string().trim().min(1, "Player name is required").max(50, "Name too long (max 50)"),
+  ign: z.string().trim().min(1, "IGN is required").max(30, "IGN too long (max 30)"),
+  uid: z.string().trim().min(1, "UID is required").max(20, "UID too long (max 20)").regex(/^\d+$/, "UID must be numbers only"),
+  role: z.enum(["rusher", "sniper", "support", "igl"], { errorMap: () => ({ message: "Select a valid role" }) }),
+  experience: z.enum(["beginner", "intermediate", "advanced", "pro"], { errorMap: () => ({ message: "Select experience level" }) }),
+  discord: z.string().trim().min(1, "Discord ID is required").max(50, "Discord ID too long (max 50)"),
+});
 
 const RecruitmentSection = () => {
   const { toast } = useToast();
@@ -23,16 +34,19 @@ const RecruitmentSection = () => {
     setIsSubmitting(true);
     
     try {
+      // Client-side validation
+      const validatedData = recruitmentSchema.parse(formData);
+      
       // Save to database
       const { error: dbError } = await supabase
         .from('recruitment_applications')
         .insert({
-          player_name: formData.playerName,
-          ign: formData.ign,
-          uid: formData.uid,
-          role: formData.role,
-          experience: formData.experience,
-          discord: formData.discord,
+          player_name: validatedData.playerName,
+          ign: validatedData.ign,
+          uid: validatedData.uid,
+          role: validatedData.role,
+          experience: validatedData.experience,
+          discord: validatedData.discord,
         });
 
       if (dbError) {
@@ -41,8 +55,8 @@ const RecruitmentSection = () => {
       }
 
       // Send email notification
-      const { error: emailError } = await supabase.functions.invoke('send-recruitment-email', {
-        body: formData,
+      const { data, error: emailError } = await supabase.functions.invoke('send-recruitment-email', {
+        body: validatedData,
       });
 
       if (emailError) {
@@ -65,11 +79,27 @@ const RecruitmentSection = () => {
       });
     } catch (error: any) {
       console.error("Submission error:", error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to submit application. Please try again.",
-        variant: "destructive",
-      });
+      
+      // Handle Zod validation errors
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Validation Error",
+          description: error.errors[0]?.message || "Please check your input",
+          variant: "destructive",
+        });
+      } else if (error.message?.includes("Too many")) {
+        toast({
+          title: "Rate Limited",
+          description: "Too many applications. Please try again later.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to submit application. Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -117,6 +147,7 @@ const RecruitmentSection = () => {
                   name="playerName"
                   value={formData.playerName}
                   onChange={handleChange}
+                  maxLength={50}
                   placeholder="Your real name"
                   required
                   className="bg-background/50 border-border focus:border-primary"
@@ -133,6 +164,7 @@ const RecruitmentSection = () => {
                   name="ign"
                   value={formData.ign}
                   onChange={handleChange}
+                  maxLength={30}
                   placeholder="In-game name"
                   required
                   className="bg-background/50 border-border focus:border-primary"
@@ -149,7 +181,10 @@ const RecruitmentSection = () => {
                   name="uid"
                   value={formData.uid}
                   onChange={handleChange}
-                  placeholder="Your UID"
+                  placeholder="Your UID (numbers only)"
+                  maxLength={20}
+                  pattern="[0-9]*"
+                  inputMode="numeric"
                   required
                   className="bg-background/50 border-border focus:border-primary"
                 />
@@ -209,6 +244,7 @@ const RecruitmentSection = () => {
                   onChange={handleChange}
                   placeholder="username#0000"
                   required
+                  maxLength={50}
                   className="bg-background/50 border-border focus:border-primary"
                 />
               </div>

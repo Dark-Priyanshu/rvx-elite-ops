@@ -41,7 +41,7 @@ const handler = async (req: Request): Promise<Response> => {
       },
       body: JSON.stringify({
         from: "RVX ESPORTS <onboarding@resend.dev>",
-        to: ["fzmoharkan@gmail.com"],
+        to: ["amitchoudhary2558@gmail.com", "priyanshushakya016@gmail.com"],
         subject: `🎮 New Recruitment Application - ${data.playerName}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #1a1a2e; color: #ffffff; padding: 30px; border-radius: 10px;">

@@ -1,11 +1,28 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+// Allowed origins for CORS
+const ALLOWED_ORIGINS = [
+  "https://rvxesports.com",
+  "https://www.rvxesports.com",
+  "https://wuwwvayjjuczwikxvsys.lovableproject.com",
+];
+
+// Check if origin is allowed (also allow localhost for development)
+function getAllowedOrigin(origin: string | null): string {
+  if (!origin) return ALLOWED_ORIGINS[0];
+  if (ALLOWED_ORIGINS.includes(origin)) return origin;
+  if (origin.includes("localhost") || origin.includes("127.0.0.1")) return origin;
+  return ALLOWED_ORIGINS[0];
+}
+
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get("origin");
+  return {
+    "Access-Control-Allow-Origin": getAllowedOrigin(origin),
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+  };
+}
 
 interface RecruitmentData {
   playerName: string;
@@ -85,6 +102,8 @@ function sanitizeForEmail(text: string): string {
 
 const handler = async (req: Request): Promise<Response> => {
   console.log("Received recruitment email request");
+  
+  const corsHeaders = getCorsHeaders(req);
 
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -221,7 +240,7 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({ error: error.message }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers: { "Content-Type": "application/json", ...getCorsHeaders(req) },
       }
     );
   }

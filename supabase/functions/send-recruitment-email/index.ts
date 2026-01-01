@@ -290,9 +290,13 @@ const handler = async (req: Request): Promise<Response> => {
       },
     });
   } catch (error: any) {
-    console.error("Error sending recruitment email:", error);
+    console.error("Error sending recruitment email:", {
+      name: error.name,
+      message: error.message,
+      timestamp: new Date().toISOString(),
+    });
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "Unable to process request. Please try again later." }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...getCorsHeaders(req) },

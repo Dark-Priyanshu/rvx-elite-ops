@@ -75,7 +75,9 @@ const Footer = () => {
                   <span className="text-sm">Rvx_esports</span>
                 </a>
                 <a
-                  href="#"
+                  href="https://discord.gg/FMSWT6UP"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors group"
                 >
                   <div className="p-2 bg-muted rounded group-hover:bg-primary/10 transition-colors">

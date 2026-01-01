@@ -1,11 +1,14 @@
-import { useState } from "react";
-import { UserPlus, Send, CheckCircle } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { UserPlus, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
+
+// Cloudflare Turnstile Site Key - Replace with your actual site key
+const TURNSTILE_SITE_KEY = "0x4AAAAAABfp6VXlCSCXJ_j5";
 
 // Validation schema
 const recruitmentSchema = z.object({
@@ -17,9 +20,29 @@ const recruitmentSchema = z.object({
   discord: z.string().trim().min(1, "Discord ID is required").max(50, "Discord ID too long (max 50)"),
 });
 
+declare global {
+  interface Window {
+    turnstile?: {
+      render: (container: string | HTMLElement, options: {
+        sitekey: string;
+        callback: (token: string) => void;
+        "error-callback"?: () => void;
+        "expired-callback"?: () => void;
+        theme?: "light" | "dark" | "auto";
+      }) => string;
+      reset: (widgetId: string) => void;
+      remove: (widgetId: string) => void;
+    };
+  }
+}
+
 const RecruitmentSection = () => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileLoaded, setTurnstileLoaded] = useState(false);
+  const turnstileRef = useRef<HTMLDivElement>(null);
+  const widgetIdRef = useRef<string | null>(null);
   const [formData, setFormData] = useState({
     playerName: "",
     ign: "",
@@ -29,8 +52,60 @@ const RecruitmentSection = () => {
     discord: "",
   });
 
+  // Load Turnstile script
+  useEffect(() => {
+    if (document.getElementById("turnstile-script")) {
+      setTurnstileLoaded(true);
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.id = "turnstile-script";
+    script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+    script.async = true;
+    script.defer = true;
+    script.onload = () => setTurnstileLoaded(true);
+    document.head.appendChild(script);
+  }, []);
+
+  // Render Turnstile widget
+  useEffect(() => {
+    if (turnstileLoaded && turnstileRef.current && window.turnstile && !widgetIdRef.current) {
+      widgetIdRef.current = window.turnstile.render(turnstileRef.current, {
+        sitekey: TURNSTILE_SITE_KEY,
+        callback: (token: string) => {
+          setTurnstileToken(token);
+        },
+        "error-callback": () => {
+          setTurnstileToken(null);
+        },
+        "expired-callback": () => {
+          setTurnstileToken(null);
+        },
+        theme: "dark",
+      });
+    }
+  }, [turnstileLoaded]);
+
+  const resetTurnstile = () => {
+    if (window.turnstile && widgetIdRef.current) {
+      window.turnstile.reset(widgetIdRef.current);
+      setTurnstileToken(null);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!turnstileToken) {
+      toast({
+        title: "Verification Required",
+        description: "Please complete the security check.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
@@ -54,14 +129,18 @@ const RecruitmentSection = () => {
         throw new Error("Failed to save application");
       }
 
-      // Send email notification
+      // Send email notification with turnstile token for verification
       const { data, error: emailError } = await supabase.functions.invoke('send-recruitment-email', {
-        body: validatedData,
+        body: { ...validatedData, turnstileToken },
       });
 
       if (emailError) {
         console.error("Email error:", emailError);
-        // Don't throw - application is saved, email is optional
+        // Check if it's a CAPTCHA verification failure
+        if (emailError.message?.includes("CAPTCHA") || emailError.message?.includes("verification")) {
+          throw new Error("Security verification failed. Please try again.");
+        }
+        // Don't throw for other email errors - application is saved
       }
 
       toast({
@@ -77,8 +156,12 @@ const RecruitmentSection = () => {
         experience: "",
         discord: "",
       });
+      
+      // Reset turnstile for next submission
+      resetTurnstile();
     } catch (error: any) {
       console.error("Submission error:", error);
+      resetTurnstile();
       
       // Handle Zod validation errors
       if (error instanceof z.ZodError) {
@@ -250,12 +333,17 @@ const RecruitmentSection = () => {
               </div>
             </div>
 
+            {/* Turnstile CAPTCHA */}
+            <div className="flex justify-center">
+              <div ref={turnstileRef} />
+            </div>
+
             {/* Submit Button */}
             <Button
               type="submit"
               size="lg"
               className="w-full font-orbitron text-base tracking-wider gap-2 rvx-glow hover:scale-[1.02] transition-all duration-300"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !turnstileToken}
             >
               {isSubmitting ? (
                 <>

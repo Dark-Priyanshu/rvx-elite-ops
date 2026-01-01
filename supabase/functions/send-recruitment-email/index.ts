@@ -31,6 +31,7 @@ interface RecruitmentData {
   role: string;
   experience: string;
   discord: string;
+  turnstileToken?: string;
 }
 
 // Simple in-memory rate limiting (per function instance)
@@ -53,6 +54,36 @@ function isRateLimited(ip: string): boolean {
   
   record.count++;
   return false;
+}
+
+// Verify Turnstile token
+async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
+  const secretKey = Deno.env.get("TURNSTILE_SECRET_KEY");
+  if (!secretKey) {
+    console.error("TURNSTILE_SECRET_KEY not configured");
+    return false;
+  }
+
+  try {
+    const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        secret: secretKey,
+        response: token,
+        remoteip: ip,
+      }),
+    });
+
+    const result = await response.json();
+    console.log("Turnstile verification result:", result);
+    return result.success === true;
+  } catch (error) {
+    console.error("Turnstile verification error:", error);
+    return false;
+  }
 }
 
 // Input validation
@@ -111,7 +142,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    // Get client IP for rate limiting
+    // Get client IP for rate limiting and Turnstile verification
     const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || 
                      req.headers.get("cf-connecting-ip") || 
                      "unknown";
@@ -131,6 +162,30 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const data: RecruitmentData = await req.json();
+    
+    // Verify Turnstile CAPTCHA
+    if (!data.turnstileToken) {
+      console.log("No Turnstile token provided");
+      return new Response(
+        JSON.stringify({ error: "CAPTCHA verification required" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    const isTurnstileValid = await verifyTurnstile(data.turnstileToken, clientIP);
+    if (!isTurnstileValid) {
+      console.log("Turnstile verification failed");
+      return new Response(
+        JSON.stringify({ error: "CAPTCHA verification failed. Please try again." }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
     
     // Validate input
     const validationError = validateInput(data);

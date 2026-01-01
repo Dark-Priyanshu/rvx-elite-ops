@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const RecruitmentSection = () => {
   const { toast } = useToast();
@@ -21,23 +22,57 @@ const RecruitmentSection = () => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate submission
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    toast({
-      title: "Application Submitted!",
-      description: "Your request to join RVX ESPORTS has been received. We'll contact you soon.",
-    });
-    
-    setFormData({
-      playerName: "",
-      ign: "",
-      uid: "",
-      role: "",
-      experience: "",
-      discord: "",
-    });
-    setIsSubmitting(false);
+    try {
+      // Save to database
+      const { error: dbError } = await supabase
+        .from('recruitment_applications')
+        .insert({
+          player_name: formData.playerName,
+          ign: formData.ign,
+          uid: formData.uid,
+          role: formData.role,
+          experience: formData.experience,
+          discord: formData.discord,
+        });
+
+      if (dbError) {
+        console.error("Database error:", dbError);
+        throw new Error("Failed to save application");
+      }
+
+      // Send email notification
+      const { error: emailError } = await supabase.functions.invoke('send-recruitment-email', {
+        body: formData,
+      });
+
+      if (emailError) {
+        console.error("Email error:", emailError);
+        // Don't throw - application is saved, email is optional
+      }
+
+      toast({
+        title: "Application Submitted!",
+        description: "Your request to join RVX ESPORTS has been received. We'll contact you soon.",
+      });
+      
+      setFormData({
+        playerName: "",
+        ign: "",
+        uid: "",
+        role: "",
+        experience: "",
+        discord: "",
+      });
+    } catch (error: any) {
+      console.error("Submission error:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to submit application. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
